@@ -1,6 +1,6 @@
 FROM python:3.10-slim
 
-# Install system dependencies
+# 1. INSTALL ALL SYSTEM DEPENDENCIES FIRST
 RUN apt-get update && apt-get install -y \
     wget \
     gnupg \
@@ -28,13 +28,15 @@ RUN apt-get update && apt-get install -y \
     lsb-release \
     --no-install-recommends
 
-# Install Google Chrome
+# 2. NOW USE WGET TO ADD CHROME REPOSITORY
 RUN wget -q -O - https://dl.google.com/linux/linux_signing_key.pub | apt-key add - \
-    && echo "deb [arch=amd64] http://dl.google.com/linux/chrome/deb/ stable main" >> /etc/apt/sources.list.d/google-chrome.list \
-    && apt-get update \
+    && echo "deb [arch=amd64] http://dl.google.com/linux/chrome/deb/ stable main" >> /etc/apt/sources.list.d/google-chrome.list
+
+# 3. UPDATE APT AND INSTALL CHROME
+RUN apt-get update \
     && apt-get install -y google-chrome-stable --no-install-recommends
 
-# Install Playwright dependencies
+# 4. INSTALL PLAYWRIGHT DEPENDENCIES
 RUN apt-get install -y \
     libnss3 \
     libnspr4 \
@@ -53,9 +55,10 @@ RUN apt-get install -y \
     libcairo2 \
     libasound2
 
-# Clean up
+# 5. CLEAN UP APT CACHE TO REDUCE IMAGE SIZE
 RUN apt-get clean && rm -rf /var/lib/apt/lists/*
 
+# [REST OF THE FILE REMAINS UNCHANGED FROM YOUR ORIGINAL]
 # Create working directory
 WORKDIR /home/jovyan
 
