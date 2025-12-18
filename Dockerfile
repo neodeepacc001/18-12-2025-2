@@ -1,82 +1,19 @@
-FROM python:3.10-slim
+# Use the official browser-use Docker image as the foundation.
+# It contains Chrome, Playwright, and browser-use pre-installed.
+FROM browseruse/browseruse:latest
 
-# 1. INSTALL ALL SYSTEM DEPENDENCIES FIRST
+# Install system packages needed for Jupyter and general utilities.
 RUN apt-get update && apt-get install -y \
-    wget \
-    gnupg \
-    ca-certificates \
-    git \
     procps \
     fonts-liberation \
-    libappindicator3-1 \
-    libasound2 \
-    libatk-bridge2.0-0 \
-    libatk1.0-0 \
-    libcups2 \
-    libdbus-1-3 \
-    libdrm2 \
-    libgbm1 \
-    libnspr4 \
-    libnss3 \
-    libx11-xcb1 \
-    libxcomposite1 \
-    libxdamage1 \
-    libxrandr2 \
-    xdg-utils \
-    libxshmfence1 \
-    libxss1 \
-    libxtst6 \
-    lsb-release \
-    --no-install-recommends
+    --no-install-recommends && \
+    apt-get clean && rm -rf /var/lib/apt/lists/*
 
-# 2. ADD CHROME REPOSITORY USING THE MODERN METHOD
-RUN wget -q -O /usr/share/keyrings/google-chrome.gpg https://dl.google.com/linux/linux_signing_key.pub \
-    && echo "deb [arch=amd64 signed-by=/usr/share/keyrings/google-chrome.gpg] http://dl.google.com/linux/chrome/deb stable main" > /etc/apt/sources.list.d/google-chrome.list
-
-# 3. UPDATE APT AND INSTALL CHROME
-RUN apt-get update \
-    && apt-get install -y google-chrome-stable --no-install-recommends
-
-# 4. INSTALL PLAYWRIGHT DEPENDENCIES
-RUN apt-get install -y \
-    libnss3 \
-    libnspr4 \
-    libatk1.0-0 \
-    libatk-bridge2.0-0 \
-    libcups2 \
-    libdrm2 \
-    libdbus-1-3 \
-    libxkbcommon0 \
-    libxcomposite1 \
-    libxdamage1 \
-    libxfixes3 \
-    libxrandr2 \
-    libgbm1 \
-    libpango-1.0-0 \
-    libcairo2 \
-    libasound2
-
-# 5. CLEAN UP APT CACHE TO REDUCE IMAGE SIZE
-RUN apt-get clean && rm -rf /var/lib/apt/lists/*
-
-# [REST OF THE FILE REMAINS UNCHANGED FROM YOUR ORIGINAL]
-# Create working directory
-WORKDIR /home/jovyan
-
-# Copy requirements
-COPY requirements.txt /tmp/requirements.txt
-
-# Install Python packages
-RUN pip install --no-cache-dir -r /tmp/requirements.txt
-
-# Install Playwright browsers
-RUN playwright install chromium
-
-# Set up Jupyter environment
+# Set up the Jupyter environment.
 ENV JUPYTER_ENABLE_LAB=yes
 ENV SHELL=/bin/bash
 
-# Add user
+# Create a non-root user (standard practice for Binder/Jupyter).
 ARG NB_USER=jovyan
 ARG NB_UID=1000
 ENV USER=${NB_USER} \
@@ -88,10 +25,14 @@ RUN adduser --disabled-password \
     --uid ${NB_UID} \
     ${NB_USER}
 
-COPY . ${HOME}
-RUN chown -R ${NB_UID} ${HOME}
-USER ${NB_USER}
-
+# Switch to the user's home directory and copy your project files.
 WORKDIR ${HOME}
+USER ${NB_USER}
+COPY . ${HOME}
 
+# Install your Python packages from requirements.txt.
+# The browser-use and Playwright are already installed in the base image.
+RUN pip install --no-cache-dir -r requirements.txt
+
+# Default command to start Jupyter Lab for Binder.
 CMD ["start-notebook.sh"]
