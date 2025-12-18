@@ -1,13 +1,8 @@
-name: browser-use-env
+name: browser-use-binder
 channels:
   - conda-forge
-  - defaults
 dependencies:
   - python=3.10
   - pip
-  - jupyterlab>=4.0
-  - notebook>=7.0
   - pip:
-    - -r requirements.txt
-    - browser-use>=0.1.0
-    - playwright>=1.40.0
+    - -r file:requirements.txt
