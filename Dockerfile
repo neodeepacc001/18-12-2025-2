@@ -1,14 +1,17 @@
 # Use the official browser-use Docker image as the foundation.
 FROM browseruse/browseruse:latest
 
-# 1. FIRST, as ROOT: Install system packages needed for Jupyter.
+# 0. EXPLICITLY SWITCH TO ROOT to gain permissions for system commands.
+USER root
+
+# 1. Install system packages needed for Jupyter.
 RUN apt-get update && apt-get install -y \
     procps \
     fonts-liberation \
     --no-install-recommends && \
     apt-get clean && rm -rf /var/lib/apt/lists/*
 
-# 2. THEN, as ROOT: Create a non-root user (standard for Binder/Jupyter).
+# 2. Create a non-root user (standard for Binder/Jupyter).
 ARG NB_USER=jovyan
 ARG NB_UID=1000
 ENV USER=${NB_USER} \
@@ -29,7 +32,7 @@ WORKDIR ${HOME}
 USER ${NB_USER}
 COPY --chown=${NB_USER}:${NB_USER} . ${HOME}
 
-# 5. Install your Python packages from requirements.txt as the USER.
+# 5. Install your Python packages from requirements.txt.
 # The browser-use and Playwright are already installed in the base image.
 RUN pip install --no-cache-dir -r requirements.txt
 
