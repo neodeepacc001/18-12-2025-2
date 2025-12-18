@@ -1,0 +1,18 @@
+#!/bin/bash
+
+# This script runs after the environment is built
+
+# Install Playwright browsers
+python -m playwright install chromium
+python -m playwright install-deps
+
+# Fix permissions
+chmod -R 755 /home/jovyan
+
+# Install Jupyter extensions
+jupyter labextension install @jupyter-widgets/jupyterlab-manager --no-build
+
+# Update pip
+pip install --upgrade pip
+
+echo "Environment setup complete!"
