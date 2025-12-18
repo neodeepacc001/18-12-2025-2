@@ -1,4 +1,7 @@
-browser-use>=0.1.0
+# Install browser-use directly from GitHub main branch
+git+https://github.com/browser-use/browser-use.git
+
+# Keep all your other dependencies as they were
 playwright>=1.40.0
 jupyterlab>=4.0.0
 notebook>=7.0.0
